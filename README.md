@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FitMe v2.1
 
-## Getting Started
+> Tu gimnasio, tu app. PWA de fitness con onboarding de equipos, sesión activa y tracking de progreso.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 16.3 (App Router) + React 19 + TypeScript 5
+- **Estilos:** Tailwind CSS v4 con design tokens Kinetic Precision
+- **DB:** Supabase (Postgres + Auth + Storage)
+- **Charts:** Recharts 2.x
+- **PWA:** Serwist
+- **Icons:** lucide-react (sin emojis en código)
+
+## Estructura
+
+```
+fitme-app/
+├── src/
+│   ├── app/
+│   │   ├── (auth)/            # login + register
+│   │   ├── (dashboard)/       # dashboard, exercises, progress, workouts
+│   │   ├── (marketing)/       # welcome
+│   │   ├── (onboarding)/      # equipo setup
+│   │   └── api/auth/callback/ # OAuth + magic link callback
+│   ├── components/
+│   │   ├── auth/              # LoginForm, RegisterForm
+│   │   ├── brand/             # FitMeLogo
+│   │   ├── dashboard/         # StatsCard, StatsGrid, TodayRoutine
+│   │   ├── equipment/         # EquipmentSelector
+│   │   ├── exercise/          # ExerciseCard, ExerciseDetail
+│   │   ├── landing/           # WelcomeHero
+│   │   ├── progress/          # WeightChart, WeightLogForm
+│   │   └── session/           # RestTimer, NumberStepper, RepsStepper, WeightStepper, SetHistoryTable, SessionCloseGuard
+│   ├── lib/
+│   │   ├── equipment/         # Catálogo de equipos
+│   │   ├── exercises/         # data loader + filters
+│   │   ├── session/           # useRestTimer (drift-free con timestamp)
+│   │   ├── supabase/          # clients + types
+│   │   ├── dates.ts           # helpers es-MX
+│   │   └── utils.ts           # cn, formatNumber
+│   ├── data/
+│   │   └── exercises.json     # Free Exercise DB (876 ejercicios)
+│   ├── styles/
+│   │   └── tokens.css         # Design system Kinetic Precision
+│   └── types/
+│       └── exercise.ts
+├── supabase/
+│   └── migrations/            # 0001 schema + 0002 RLS + 0003 storage
+├── public/
+│   └── sw.js                  # generado por Serwist
+├── next.config.ts             # PWA + image domains
+└── .env.local.example
+```
+
+## Setup (5 min)
+
+### 1. Instalar dependencias
+
+```bash
+cd fitme-app
+npm install
+```
+
+### 2. Crear proyecto Supabase
+
+1. https://supabase.com/dashboard/new
+2. Nombre: `fitme-gabriel` (o `fitme-veronica` para 2da microapp)
+3. Region: us-east-1
+4. Password: 32+ caracteres aleatorios
+
+### 3. Aplicar migrations
+
+En el SQL Editor de Supabase, ejecutar en orden:
+
+1. `supabase/migrations/0001_initial_schema.sql` — crea todas las tablas
+2. `supabase/migrations/0002_rls_policies.sql` — habilita RLS y policies
+3. `supabase/migrations/0003_storage_policies.sql` — crea bucket + policies
+
+### 4. Configurar Auth providers
+
+En **Authentication → Providers**:
+
+- **Email:** habilitado (para magic link)
+- **Google:** crear OAuth app en Google Cloud Console
+  - Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
+
+### 5. Variables de entorno
+
+```bash
+cp .env.local.example .env.local
+# Editar con las keys de Supabase (Settings → API)
+```
+
+### 6. Correr dev
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Abre http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy a Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Conectar repo
+vercel link
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Configurar env vars en Vercel dashboard
+# NEXT_PUBLIC_SUPABASE_URL
+# NEXT_PUBLIC_SUPABASE_ANON_KEY
+# NEXT_PUBLIC_APP_NAME
 
-## Learn More
+# Deploy
+vercel --prod
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 2 microapps (Gabriel + Verónica)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para crear la 2da microapp (mismo código, diferente proyecto Supabase):
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Opción 1:** Fork del repo + cambiar env vars en Vercel
+- **Opción 2:** Mismo repo, 2 proyectos Vercel con diferentes env vars
 
-## Deploy on Vercel
+## Decisiones de diseño
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Sin emojis en código** (regla global QRETARIA) — usamos lucide-react
+- **Material Symbols reemplazado por lucide-react** — tree-shakeable, sin Google Fonts
+- **Timer drift-free** — `useRestTimer` usa timestamp + Page Visibility API
+- **Sin modales** — solo páginas o confirmaciones inline (lección SOSOCO)
+- **RLS activo** — cada usuario solo ve sus datos
+- **Touch targets ≥ 44x44px** — accesibilidad desde el inicio
+- **Tabular nums en stats** — sin jitter horizontal al cambiar números
+- **prefers-reduced-motion respetado** — animaciones se reducen automáticamente
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Quality gates
+
+```bash
+npx tsc --noEmit        # TypeScript strict sin errores
+npm run lint            # ESLint sin errores
+npm run build           # Build de producción
+```
+
+Metas:
+- Lighthouse Performance ≥ 90
+- Lighthouse PWA ≥ 90
+- Lighthouse Accessibility ≥ 90
+
+## Próximas mejoras (post v2.1)
+
+- [ ] Tests E2E con Playwright
+- [ ] Tests unit con Vitest
+- [ ] PDF export de rutinas
+- [ ] Sincronización con HealthKit / Google Fit
+- [ ] Rutinas pre-armadas (push/pull/legs)
+- [ ] Comparador de fotos de progreso
