@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Dumbbell, Play, Pause } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
+import { tMuscle, tEquipment } from "@/lib/i18n/exercise-es";
 import { cn } from "@/lib/utils";
 
 const FEDB_IMAGE_BASE =
@@ -84,7 +85,7 @@ export function ExerciseCard({ exercise }: Props) {
 
         {/* Músculo badge (esquina superior derecha) */}
         <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm text-[10px] font-bold uppercase tracking-wide text-on-surface">
-          {exercise.primaryMuscles[0] || "Fuerza"}
+          {tMuscle(exercise.primaryMuscles[0] || "Fuerza")}
         </span>
 
         {/* Play/Pause button para GIFs */}
@@ -113,7 +114,7 @@ export function ExerciseCard({ exercise }: Props) {
         <div className="flex items-center gap-1 text-[10px] text-on-surface-variant">
           <Dumbbell className="w-3 h-3 shrink-0" aria-hidden />
           <span className="capitalize truncate">
-            {exercise.equipment.replace(/_/g, " ")}
+            {tEquipment(exercise.equipment)}
           </span>
         </div>
       </div>

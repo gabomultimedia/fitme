@@ -16,6 +16,7 @@ import {
   ListOrdered,
 } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
+import { tMuscle, tEquipment, tLevel, tMechanic, tForce } from "@/lib/i18n/exercise-es";
 import { cn } from "@/lib/utils";
 
 const FEDB_IMAGE_BASE =
@@ -28,7 +29,7 @@ interface Props {
 export function ExerciseDetail({ exercise }: Props) {
   const [favorited, setFavorited] = useState(false);
   const youtubeQuery = encodeURIComponent(
-    `${exercise.name} form technique tutorial`
+    `${exercise.name} técnica correcta español`
   );
 
   const imagePath = `${FEDB_IMAGE_BASE}/${exercise.images[0]}`;
@@ -51,11 +52,7 @@ export function ExerciseDetail({ exercise }: Props) {
           <div className="absolute top-3 left-3 flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary text-xs font-bold uppercase shadow-sm flex items-center gap-1">
               <Flame className="w-3.5 h-3.5" aria-hidden />
-              {exercise.mechanic === "compound"
-                ? "Compuesto"
-                : exercise.mechanic === "isolation"
-                ? "Aislamiento"
-                : "Fuerza"}
+              {tMechanic(exercise.mechanic)}
             </span>
           </div>
 
@@ -96,16 +93,16 @@ export function ExerciseDetail({ exercise }: Props) {
               className="px-3 py-1.5 rounded-full bg-error-container text-on-error-container text-xs font-bold capitalize flex items-center gap-1.5 shadow-sm"
             >
               <Activity className="w-3.5 h-3.5" aria-hidden />
-              {m}
+              {tMuscle(m)}
             </span>
           ))}
-          <span className="px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed text-xs font-bold capitalize flex items-center gap-1.5">
+          <span className="px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed text-xs font-bold flex items-center gap-1.5">
             <Wrench className="w-3.5 h-3.5" aria-hidden />
-            {exercise.equipment.replace(/_/g, " ")}
+            {tEquipment(exercise.equipment)}
           </span>
           <span className="px-3 py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant text-xs font-bold capitalize flex items-center gap-1.5">
             <Award className="w-3.5 h-3.5" aria-hidden />
-            {exercise.level}
+            {tLevel(exercise.level)}
           </span>
         </div>
 
@@ -144,9 +141,9 @@ export function ExerciseDetail({ exercise }: Props) {
         {/* Stats bento */}
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-surface-container-low rounded-xl p-3 text-center">
-            <p className="text-xs font-bold text-outline uppercase">Rango</p>
+            <p className="text-xs font-bold text-outline uppercase">Reps</p>
             <p className="text-xl font-bold text-on-surface tabular-nums">6-10</p>
-            <p className="text-xs text-on-surface-variant">reps/serie</p>
+            <p className="text-xs text-on-surface-variant">por serie</p>
           </div>
           <div className="bg-surface-container-low rounded-xl p-3 text-center">
             <p className="text-xs font-bold text-outline uppercase">Descanso</p>
@@ -154,9 +151,9 @@ export function ExerciseDetail({ exercise }: Props) {
             <p className="text-xs text-on-surface-variant">entre series</p>
           </div>
           <div className="bg-surface-container-low rounded-xl p-3 text-center">
-            <p className="text-xs font-bold text-outline uppercase">RPE</p>
+            <p className="text-xs font-bold text-outline uppercase">Esfuerzo</p>
             <p className="text-xl font-bold text-secondary tabular-nums">8.0</p>
-            <p className="text-xs text-on-surface-variant">2 en recámara</p>
+            <p className="text-xs text-on-surface-variant">RPE sugerido</p>
           </div>
         </div>
 
@@ -181,6 +178,9 @@ export function ExerciseDetail({ exercise }: Props) {
               </li>
             ))}
           </ol>
+          <p className="text-xs text-on-surface-variant italic">
+            📝 Instrucciones en inglés (de la fuente original). El video tutorial tiene versiones en español.
+          </p>
         </div>
 
         {/* Pro tip */}
@@ -188,10 +188,10 @@ export function ExerciseDetail({ exercise }: Props) {
           <Lightbulb className="w-6 h-6 text-secondary shrink-0 mt-0.5" aria-hidden />
           <div>
             <h4 className="text-base font-semibold text-on-secondary-fixed">
-              Consejo pro
+              Consejo de seguridad
             </h4>
             <p className="text-sm text-on-secondary-fixed-variant mt-1 leading-normal">
-              Usa topes de barra o un compañero cuando pruebes nuevos PRs para evitar
+              Usa topes de barra o un compañero cuando pruebes nuevos pesos máximos (PR) para evitar
               lesiones en la última repetición.
             </p>
           </div>

@@ -5,23 +5,24 @@ import { createClient } from "@/lib/supabase/client";
 import { Search, Loader2, Info } from "lucide-react";
 import { ExerciseCard } from "@/components/exercise/ExerciseCard";
 import type { Exercise } from "@/types/exercise";
+import { tMuscle, tEquipment } from "@/lib/i18n/exercise-es";
 import { cn } from "@/lib/utils";
 
 const MUSCLE_COLORS: Record<string, string> = {
-  abdominals: "bg-tertiary-container text-on-tertiary-container",
-  chest: "bg-error-container text-on-error-container",
-  biceps: "bg-secondary-fixed text-on-secondary-fixed",
-  triceps: "bg-secondary-container text-on-secondary-container",
-  shoulders: "bg-primary-fixed text-on-primary-fixed",
-  lats: "bg-surface-container-high text-on-surface",
-  "middle back": "bg-surface-container-high text-on-surface",
-  "lower back": "bg-surface-container-high text-on-surface",
-  quadriceps: "bg-tertiary-container text-on-tertiary-container",
-  hamstrings: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
-  calves: "bg-surface-container-high text-on-surface",
-  glutes: "bg-primary-fixed text-on-primary-fixed",
-  forearms: "bg-secondary-fixed text-on-secondary-fixed-variant",
-  traps: "bg-surface-container-high text-on-surface",
+  abdominales: "bg-tertiary-container text-on-tertiary-container",
+  pecho: "bg-error-container text-on-error-container",
+  bíceps: "bg-secondary-fixed text-on-secondary-fixed",
+  tríceps: "bg-secondary-container text-on-secondary-container",
+  hombros: "bg-primary-fixed text-on-primary-fixed",
+  dorsales: "bg-surface-container-high text-on-surface",
+  "espalda media": "bg-surface-container-high text-on-surface",
+  "espalda baja": "bg-surface-container-high text-on-surface",
+  cuádriceps: "bg-tertiary-container text-on-tertiary-container",
+  isquiotibiales: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+  pantorrillas: "bg-surface-container-high text-on-surface",
+  glúteos: "bg-primary-fixed text-on-primary-fixed",
+  antebrazos: "bg-secondary-fixed text-on-secondary-fixed-variant",
+  trapecios: "bg-surface-container-high text-on-surface",
 };
 
 function getMuscleColor(muscle: string): string {
@@ -163,7 +164,7 @@ export default function ExercisesPage() {
                 : `${getMuscleColor(m)} border border-transparent`
             )}
           >
-            {m} ({count})
+            {tMuscle(m)} ({count})
           </button>
         ))}
       </div>
@@ -184,7 +185,7 @@ export default function ExercisesPage() {
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-base font-semibold text-on-surface capitalize flex items-center gap-2">
                   <span className={cn("w-2 h-2 rounded-full", getMuscleColor(muscle).split(" ")[0])} />
-                  {muscle}
+                  {tMuscle(muscle)}
                 </h2>
                 <span className="text-xs text-on-surface-variant">{exercises.length}</span>
               </div>

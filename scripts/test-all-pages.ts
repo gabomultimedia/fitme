@@ -13,8 +13,13 @@ interface PageResult {
 
 async function main() {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
+  const context = await browser.newContext({
+    viewport: { width: 414, height: 896 }, // iPhone XR
+  });
   const page = await context.newPage();
+
+  // Limpiar cookies por si hay sesión previa
+  await context.clearCookies();
 
   const allErrors: string[] = [];
   page.on("pageerror", (e) => allErrors.push(`[pageerror] ${e.message}`));
@@ -24,11 +29,22 @@ async function main() {
 
   // Login
   console.log("🔐 Login Gabriel...");
-  await page.goto(`${PROD_URL}/login`, { waitUntil: "domcontentloaded", timeout: 20000 });
+  await page.goto(`${PROD_URL}/login`, { waitUntil: "load", timeout: 30000 });
+  await page.waitForLoadState("domcontentloaded");
   await page.fill('input[type="email"]', "gabriel@fitme.app");
   await page.fill('input[type="password"]', "Gabo2018$");
   await page.click('button[type="submit"]');
-  await page.waitForURL("**/dashboard", { timeout: 15000 });
+  // Esperar a dashboard por polling
+  for (let i = 0; i < 30; i++) {
+    await page.waitForTimeout(500);
+    if (page.url().includes("/dashboard")) break;
+  }
+  if (!page.url().includes("/dashboard")) {
+    console.log("❌ Login falló, URL:", page.url());
+    const body = await page.locator("body").textContent();
+    console.log("Body preview:", body?.substring(0, 200));
+    process.exit(1);
+  }
   console.log("✅ Login OK\n");
 
   // Test cada página
