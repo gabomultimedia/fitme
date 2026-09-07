@@ -4,6 +4,7 @@ import { formatTodayEs } from "@/lib/dates";
 import { TodayRoutine } from "@/components/dashboard/TodayRoutine";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { BarChart3 } from "lucide-react";
+import type { Goal, Level } from "@/lib/exercises/recommender";
 
 export const metadata = { title: "Home | FitMe" };
 
@@ -16,7 +17,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name, weight_kg, weight_goal_kg")
+    .select("display_name, weight_kg, weight_goal_kg, goal, level, equipment_available")
     .eq("id", user.id)
     .single();
 
@@ -46,7 +47,7 @@ export default async function DashboardPage() {
       ? Math.round((profile.weight_kg - firstWeightThisMonth.weight_kg) * 10) / 10
       : null;
 
-  // Calcular racha (días consecutivos con sesión)
+  // Calcular racha
   const { data: recentSessions } = await supabase
     .from("workout_sessions")
     .select("started_at")
@@ -69,7 +70,11 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <TodayRoutine />
+      <TodayRoutine
+        goal={(profile?.goal as Goal) ?? "both"}
+        level={(profile?.level as Level) ?? "beginner"}
+        equipment={(profile?.equipment_available as string[]) ?? []}
+      />
 
       <section>
         <h2 className="text-lg font-semibold text-on-surface flex items-center gap-2 mb-3">

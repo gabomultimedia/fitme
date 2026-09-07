@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Dumbbell, Play, Pause } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
 import { tMuscle, tEquipment } from "@/lib/i18n/exercise-es";
+import { tExerciseName } from "@/lib/i18n/exercise-names-es";
 import { cn } from "@/lib/utils";
 
 const FEDB_IMAGE_BASE =
@@ -109,7 +110,7 @@ export function ExerciseCard({ exercise }: Props) {
 
       <div className="p-2.5 flex flex-col gap-0.5">
         <h3 className="text-sm font-semibold text-on-surface line-clamp-1">
-          {exercise.name}
+          {tExerciseName(exercise.name)}
         </h3>
         <div className="flex items-center gap-1 text-[10px] text-on-surface-variant">
           <Dumbbell className="w-3 h-3 shrink-0" aria-hidden />

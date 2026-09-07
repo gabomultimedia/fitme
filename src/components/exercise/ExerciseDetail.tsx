@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { Exercise } from "@/types/exercise";
 import { tMuscle, tEquipment, tLevel, tMechanic, tForce } from "@/lib/i18n/exercise-es";
+import { tExerciseName, tExerciseDescription } from "@/lib/i18n/exercise-names-es";
 import { cn } from "@/lib/utils";
 
 const FEDB_IMAGE_BASE =
@@ -82,7 +83,7 @@ export function ExerciseDetail({ exercise }: Props) {
         {/* Title */}
         <h1 className="text-2xl font-semibold text-on-surface tracking-tight flex items-center gap-2">
           <Flame className="w-6 h-6 text-secondary" aria-hidden />
-          {exercise.name}
+          {tExerciseName(exercise.name)}
         </h1>
 
         {/* Badges */}
