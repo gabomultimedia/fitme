@@ -27,8 +27,8 @@ export default function ExercisesPage() {
         .single();
       setEquipment(profile?.equipment_available ?? []);
 
-      // 2) Cargar JSON de ejercicios
-      const res = await fetch("/api/exercises");
+      // 2) Cargar JSON de ejercicios (servido estáticamente desde /public)
+      const res = await fetch("/exercises.json");
       const data: Exercise[] = await res.json();
       setAllExercises(data);
       setLoading(false);
