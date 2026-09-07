@@ -2,11 +2,13 @@
 
 > Tu gimnasio, tu app. PWA de fitness con onboarding de equipos, sesión activa y tracking de progreso.
 
+**1 app, 1 proyecto Supabase, 2 usuarios** (Gabriel + Verónica). Cada quien con su perfil, equipos y datos privados. Comparten la misma base de datos pero el RLS asegura que cada uno solo ve lo suyo.
+
 ## Stack
 
 - **Framework:** Next.js 16.3 (App Router) + React 19 + TypeScript 5
 - **Estilos:** Tailwind CSS v4 con design tokens Kinetic Precision
-- **DB:** Supabase (Postgres + Auth + Storage)
+- **DB:** Supabase (Postgres + Auth + Storage) — **1 proyecto compartido**
 - **Charts:** Recharts 2.x
 - **PWA:** Serwist
 - **Icons:** lucide-react (sin emojis en código)
@@ -61,10 +63,10 @@ cd fitme-app
 npm install
 ```
 
-### 2. Crear proyecto Supabase
+### 2. Crear proyecto Supabase (UNO solo compartido)
 
 1. https://supabase.com/dashboard/new
-2. Nombre: `fitme-gabriel` (o `fitme-veronica` para 2da microapp)
+2. Nombre: `fitme-couple` (o como prefieras)
 3. Region: us-east-1
 4. Password: 32+ caracteres aleatorios
 
@@ -104,21 +106,25 @@ npm run dev
 # Conectar repo
 vercel link
 
-# Configurar env vars en Vercel dashboard
-# NEXT_PUBLIC_SUPABASE_URL
+# Configurar env vars en Vercel dashboard:
+# NEXT_PUBLIC_SUPABASE_URL          (del proyecto compartido)
 # NEXT_PUBLIC_SUPABASE_ANON_KEY
-# NEXT_PUBLIC_APP_NAME
+# NEXT_PUBLIC_APP_NAME              (ej. "FitMe")
 
 # Deploy
 vercel --prod
 ```
 
-## 2 microapps (Gabriel + Verónica)
+## Multi-usuario (Gabriel + Verónica)
 
-Para crear la 2da microapp (mismo código, diferente proyecto Supabase):
+**1 app, 1 Supabase, 2 usuarios.** Cada quien:
 
-- **Opción 1:** Fork del repo + cambiar env vars en Vercel
-- **Opción 2:** Mismo repo, 2 proyectos Vercel con diferentes env vars
+1. Se registra independientemente con su email (magic link o Google)
+2. Configura SUS equipos (cada quien puede tener equipo distinto si va a gimnasios diferentes)
+3. Ve SOLO sus workouts, peso, fotos (RLS activo)
+4. Pueden compartir la misma URL de la app — el login los identifica
+
+**No hay "modo pareja"** por ahora. Si más adelante quieren ver el progreso del otro, agregamos un flag `is_public` por workout o una tabla `partnerships`.
 
 ## Decisiones de diseño
 
