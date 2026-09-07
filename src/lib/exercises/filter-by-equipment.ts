@@ -1,14 +1,9 @@
 import type { Exercise } from "@/types/exercise";
 
 interface Options {
-  /** Incluir ejercicios bodyweight (no requieren equipo). Default: true */
   includeBodyweight?: boolean;
 }
 
-/**
- * Filtra ejercicios por el equipamiento disponible del usuario.
- * Bodyweight siempre incluido por defecto (no requiere equipo).
- */
 export function filterByEquipment(
   exercises: Exercise[],
   available: string[],
@@ -19,4 +14,14 @@ export function filterByEquipment(
     if (ex.equipment === "bodyweight") return options.includeBodyweight;
     return set.has(ex.equipment);
   });
+}
+
+export function groupByMuscle(exercises: Exercise[]): Map<string, Exercise[]> {
+  const groups = new Map<string, Exercise[]>();
+  for (const ex of exercises) {
+    const muscle = ex.primaryMuscles[0] ?? "other";
+    if (!groups.has(muscle)) groups.set(muscle, []);
+    groups.get(muscle)!.push(ex);
+  }
+  return groups;
 }

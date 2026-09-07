@@ -2,9 +2,31 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Info } from "lucide-react";
 import { ExerciseCard } from "@/components/exercise/ExerciseCard";
 import type { Exercise } from "@/types/exercise";
+import { cn } from "@/lib/utils";
+
+const MUSCLE_COLORS: Record<string, string> = {
+  abdominals: "bg-tertiary-container text-on-tertiary-container",
+  chest: "bg-error-container text-on-error-container",
+  biceps: "bg-secondary-fixed text-on-secondary-fixed",
+  triceps: "bg-secondary-container text-on-secondary-container",
+  shoulders: "bg-primary-fixed text-on-primary-fixed",
+  lats: "bg-surface-container-high text-on-surface",
+  "middle back": "bg-surface-container-high text-on-surface",
+  "lower back": "bg-surface-container-high text-on-surface",
+  quadriceps: "bg-tertiary-container text-on-tertiary-container",
+  hamstrings: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+  calves: "bg-surface-container-high text-on-surface",
+  glutes: "bg-primary-fixed text-on-primary-fixed",
+  forearms: "bg-secondary-fixed text-on-secondary-fixed-variant",
+  traps: "bg-surface-container-high text-on-surface",
+};
+
+function getMuscleColor(muscle: string): string {
+  return MUSCLE_COLORS[muscle.toLowerCase()] ?? "bg-surface-container text-on-surface";
+}
 
 export default function ExercisesPage() {
   const [allExercises, setAllExercises] = useState<Exercise[]>([]);
@@ -12,6 +34,7 @@ export default function ExercisesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [muscleFilter, setMuscleFilter] = useState<string | null>(null);
+  const [view, setView] = useState<"grid" | "grouped">("grouped");
 
   useEffect(() => {
     async function load() {
@@ -19,38 +42,40 @@ export default function ExercisesPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1) Cargar equipment del profile
+      // 1) Equipment del profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("equipment_available")
         .eq("id", user.id)
         .single();
-      setEquipment(profile?.equipment_available ?? []);
+      const userEquipment = profile?.equipment_available ?? [];
+      setEquipment(userEquipment);
 
-      // 2) Cargar JSON de ejercicios (servido estáticamente desde /public)
+      // 2) Ejercicios desde JSON estático
       const res = await fetch("/exercises.json");
       const data: Exercise[] = await res.json();
-      setAllExercises(data);
+
+      // 3) Filtrar por equipment
+      const eqSet = new Set(userEquipment);
+      const filtered = data.filter((ex) => {
+        if (ex.equipment === "bodyweight") return true;
+        return eqSet.has(ex.equipment);
+      });
+      setAllExercises(filtered);
       setLoading(false);
     }
     load();
   }, []);
 
-  // Filtrar por equipment + search + muscle
+  // Filtrar por search + muscle
   const filtered = useMemo(() => {
     return allExercises.filter((ex) => {
-      // Filter por equipment (incluir bodyweight siempre)
-      if (ex.equipment !== "bodyweight" && !equipment.includes(ex.equipment)) {
-        return false;
-      }
-      // Search
       if (search) {
         const q = search.toLowerCase();
         const matchesName = ex.name.toLowerCase().includes(q);
         const matchesMuscle = ex.primaryMuscles.some((m) => m.toLowerCase().includes(q));
         if (!matchesName && !matchesMuscle) return false;
       }
-      // Muscle filter
       if (muscleFilter) {
         const allMuscles = [...ex.primaryMuscles, ...ex.secondaryMuscles];
         if (!allMuscles.some((m) => m.toLowerCase() === muscleFilter.toLowerCase())) {
@@ -59,9 +84,9 @@ export default function ExercisesPage() {
       }
       return true;
     });
-  }, [allExercises, equipment, search, muscleFilter]);
+  }, [allExercises, search, muscleFilter]);
 
-  // Top músculos (para chips de filtro rápido)
+  // Top músculos con count
   const topMuscles = useMemo(() => {
     const counts = new Map<string, number>();
     for (const ex of allExercises) {
@@ -71,9 +96,19 @@ export default function ExercisesPage() {
     }
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 12)
-      .map(([m]) => m);
+      .slice(0, 10);
   }, [allExercises]);
+
+  // Agrupar por músculo
+  const grouped = useMemo(() => {
+    const groups = new Map<string, Exercise[]>();
+    for (const ex of filtered) {
+      const m = ex.primaryMuscles[0] ?? "other";
+      if (!groups.has(m)) groups.set(m, []);
+      groups.get(m)!.push(ex);
+    }
+    return Array.from(groups.entries()).sort((a, b) => b[1].length - a[1].length);
+  }, [filtered]);
 
   if (loading) {
     return (
@@ -88,7 +123,7 @@ export default function ExercisesPage() {
       <header>
         <h1 className="text-2xl font-bold text-on-surface tracking-tight">Biblioteca</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          {filtered.length} de {allExercises.length} ejercicios
+          {filtered.length} de {allExercises.length} ejercicios · {grouped.length} grupos musculares
         </p>
       </header>
 
@@ -104,45 +139,61 @@ export default function ExercisesPage() {
         />
       </div>
 
-      {/* Muscle filter chips */}
+      {/* Top muscle chips */}
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
         <button
           onClick={() => setMuscleFilter(null)}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
+          className={cn(
+            "shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-colors",
             !muscleFilter
               ? "bg-primary text-on-primary"
               : "bg-surface-container-lowest text-on-surface border border-outline-variant"
-          }`}
+          )}
         >
-          Todos
+          Todos ({allExercises.length})
         </button>
-        {topMuscles.map((m) => (
+        {topMuscles.map(([m, count]) => (
           <button
             key={m}
             onClick={() => setMuscleFilter(muscleFilter === m ? null : m)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors ${
+            className={cn(
+              "shrink-0 px-3 py-1.5 rounded-full text-xs font-bold capitalize transition-colors",
               muscleFilter === m
                 ? "bg-primary text-on-primary"
-                : "bg-surface-container-lowest text-on-surface border border-outline-variant"
-            }`}
+                : `${getMuscleColor(m)} border border-transparent`
+            )}
           >
-            {m}
+            {m} ({count})
           </button>
         ))}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-on-surface-variant mb-2">
+        <div className="flex flex-col items-center text-center py-12 gap-2">
+          <Info className="w-8 h-8 text-outline" />
+          <p className="text-on-surface-variant max-w-xs">
             {equipment.length === 0
               ? "Configura tu equipamiento en el perfil para ver ejercicios personalizados."
               : "No hay ejercicios que coincidan con tu búsqueda."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
-          {filtered.map((ex) => (
-            <ExerciseCard key={ex.id} exercise={ex} />
+        <div className="flex flex-col gap-6">
+          {grouped.map(([muscle, exercises]) => (
+            <section key={muscle}>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-base font-semibold text-on-surface capitalize flex items-center gap-2">
+                  <span className={cn("w-2 h-2 rounded-full", getMuscleColor(muscle).split(" ")[0])} />
+                  {muscle}
+                </h2>
+                <span className="text-xs text-on-surface-variant">{exercises.length}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {exercises.map((ex) => (
+                  <ExerciseCard key={ex.id} exercise={ex} />
+                ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
