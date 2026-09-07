@@ -1,12 +1,8 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { RegisterForm } from "@/components/auth/RegisterForm";
 
-export const metadata = { title: "Crear cuenta | FitMe" };
+export const metadata = { title: "Acceso restringido | FitMe" };
 
-export default async function RegisterPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) redirect("/dashboard");
-  return <RegisterForm />;
+// Solo 2 usuarios fijos (Gabriel + Verónica). El registro público está deshabilitado.
+export default function RegisterPage() {
+  redirect("/login");
 }
