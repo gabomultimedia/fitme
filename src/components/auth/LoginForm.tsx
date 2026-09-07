@@ -29,18 +29,25 @@ export function LoginForm() {
     setError(null);
     try {
       const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (signInError) {
-        setError("Credenciales incorrectas. Intenta de nuevo.");
+        // Mostrar el error real de Supabase para debug
+        console.error("[LoginForm] signIn error:", signInError);
+        setError(`Error: ${signInError.message} (code: ${signInError.status ?? "?"})`);
+        return;
+      }
+      if (!data.session) {
+        setError("No se creó sesión. Intenta de nuevo.");
         return;
       }
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+    } catch (err) {
+      console.error("[LoginForm] exception:", err);
+      setError(`Error de conexión: ${err instanceof Error ? err.message : "desconocido"}`);
     } finally {
       setLoading(false);
     }
@@ -153,12 +160,6 @@ export function LoginForm() {
             </p>
           )}
         </form>
-
-        <div className="mt-8 p-3 rounded-xl bg-surface-container-low text-xs text-on-surface-variant leading-relaxed">
-          <p className="font-semibold text-on-surface mb-1">Credenciales:</p>
-          <p>👤 <code className="font-mono">gabriel@fitme.app</code> / <code className="font-mono">Gabo2018$</code></p>
-          <p>👤 <code className="font-mono">vero@fitme.app</code> / <code className="font-mono">Vero2018$</code></p>
-        </div>
       </main>
     </div>
   );
